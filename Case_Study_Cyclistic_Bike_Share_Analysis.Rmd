@@ -1,0 +1,518 @@
+---
+title: "Case Study_Cyclistic bike-share analysis"
+author: "KHIN MYO AYE"
+date: '2022-05-21'
+output: html_document
+---
+
+# Summary
+
+This project is Google Data Analytics Certificate capstone project. 
+In project, all data use at Clyclistic, a bike-share company in Chicago. 
+This company launched a successful bike-share offering in 2016, 5824 bicycles are geotracked and locked into a network of 692 stations across Chicago.
+
+Cyclistic’s marketing strategy relied on building general awareness and appealing to broad consumer segments.Pricing plans are single-ride passes, full-day passes, and annual memberships.Customer can purchase single-ride or full-day passes are referred to as casual riders and annual memberships are Cyclistic members. Cyclistic’s finance analysts have concluded that annual members are much more profitable than casual riders.
+
+The director of the marketing analyst team to find future success depends on maximizing the number of annual memberships.The team will design a new marketing strategy to convert casual riders into annual members.
+
+The full document of case study can see <a href ="https://www.coursera.org/learn/google-data-analytics-capstone">Google Data Analytics Capstone </a>
+
+## Step 1 : Ask
+
+### Define the Business Problem
+
+  It is already known that annual members receive more revenue than casual riders. According to this situation, the key consideration is to persuade casual riders to become annual members.
+
+### Business Task
+
+The task is to identify the differences between casual riders and annual member, and to provide a relevant message to mobilize casual users to switch to annual subscriptions. So that, the first question to answer is : How do annual members and casual riders use Cyclistic bikes differently?
+
+### Key Stakeholder Consideration
+
+* Cyclistic Characters
+* Marketing Director (Lily Moreno)
+* Cyclistic Marketing Analytics Team
+* Cyclistic Executive Team
+
+## Step 2 : Prepare   
+
+### Data Preparation
+
+##### **Data Source Location**
+  
++ All Cyclistic’s historical trip data collected from <a href=https://divvy-tripdata.s3.amazonaws.com/index.html>Cyclistic's trip dataset</a>
+
++ The datasets have a different name because Cyclistic is a fictional company.
+
++ The data has been made available by Motivate International Inc. under this <a href=https://ride.divvybikes.com/data-license-agreement>license</a>. So, this is public data.
+
+##### **Data Organization**
+
+I used sixteen csv files with thirteenth variables.
+
+##### **Data Credibility**
+
+The data look to appear in good sense and I did not find any duplicate records when I check it. In order to check ROCCC,
+
++ **R**eliable : I guess these data are reliable that is why public dataset under license agreement
++ **O**riginal : Yes
++ **C**omprehensive : I guess most are comprehensive even though some missing data, we can use it
++ **C**urrent : Yes, I use nearly sixteen months data
++ **C**ited : Yes
+
+##### **Sorting and Filtering**
+
+I used twelve months of 2021 and four months of 2022 this was current data files. All data file have same variables and some are null or blank records. So I have to remove it using by filtering function in Excel. Before I process, some installing need to do.
+
+##### **Setting Requirement Packages**
+
+**Install required packages**
+
+* tidyverse for data import and wrangling
+* lubridate for date functions
+* ggplot for visualization
+
+
+```{r loading packages}
+library(tidyverse) #helps wrangle data
+library(lubridate)  #helps wrangle date attributes
+library(ggplot2)  #helps visualize data
+library(dplyr)  # for efficiently manipulating datasets
+library(tidyr)  #to help to create tidy or clean data
+library(knitr)
+getwd() #displays your working directory
+
+```
+
+**COLLECT All DATA**
+
+loading all data from 01/2021 to 04/2022
+
+```{r loading data from 01/2021 to 04/2022}
+trip_2021_01 <-read.csv("Cyclistic_Blike_Share/202101-divvy-tripdata.csv")
+trip_2021_02 <-read.csv("Cyclistic_Blike_Share/202102-divvy-tripdata.csv")
+trip_2021_03 <-read.csv("Cyclistic_Blike_Share/202103-divvy-tripdata.csv")
+trip_2021_04 <-read.csv("Cyclistic_Blike_Share/202104-divvy-tripdata.csv")
+trip_2021_05 <-read.csv("Cyclistic_Blike_Share/202105-divvy-tripdata.csv")
+trip_2021_06 <-read.csv("Cyclistic_Blike_Share/202106-divvy-tripdata.csv")
+trip_2021_07 <-read.csv("Cyclistic_Blike_Share/202107-divvy-tripdata.csv")
+trip_2021_08 <-read.csv("Cyclistic_Blike_Share/202108-divvy-tripdata.csv")
+trip_2021_09 <-read.csv("Cyclistic_Blike_Share/202109-divvy-tripdata.csv")
+trip_2021_10 <-read.csv("Cyclistic_Blike_Share/202110-divvy-tripdata.csv")
+trip_2021_11 <-read.csv("Cyclistic_Blike_Share/202111-divvy-tripdata.csv")
+trip_2021_12 <-read.csv("Cyclistic_Blike_Share/202112-divvy-tripdata.csv")
+trip_2022_01 <-read.csv("Cyclistic_Blike_Share/202201-divvy-tripdata.csv")
+trip_2022_02 <-read.csv("Cyclistic_Blike_Share/202202-divvy-tripdata.csv")
+trip_2022_03 <-read.csv("Cyclistic_Blike_Share/202203-divvy-tripdata.csv")
+trip_2022_04 <-read.csv("Cyclistic_Blike_Share/202204-divvy-tripdata.csv")
+
+```
+
+**WRANGLE DATA AND COMBINE IT INTO A SINGLE FILE**
+
+Check the column names in each of the files is the same order or not, if not match by order, we must to update them before joining them into one file.
+
+
+```{r}
+
+colnames(trip_2021_01)
+colnames(trip_2021_02)
+colnames(trip_2021_03)
+colnames(trip_2021_04)
+colnames(trip_2021_05)
+colnames(trip_2021_06)
+
+colnames(trip_2021_07)
+colnames(trip_2021_08)
+colnames(trip_2021_09)
+colnames(trip_2021_10)
+colnames(trip_2021_11)
+colnames(trip_2021_12)
+
+colnames(trip_2022_01)
+colnames(trip_2022_02)
+colnames(trip_2022_03)
+colnames(trip_2022_04)
+
+```
+
+#### Combine all file of 2021 as a single file
+
+```{r conbine as a single file of 2021}
+bike_share_2021<-bind_rows(trip_2021_01,trip_2021_02,trip_2021_03,trip_2021_04,
+                           trip_2021_05,trip_2021_06,trip_2021_07,trip_2021_08,
+                           trip_2021_09,trip_2021_10,trip_2021_11,trip_2021_12)
+```
+
+#### Combine all file of 2022 as a single file
+
+```{r conbine as a single file of 2022}
+
+bike_share_2022<-bind_rows(trip_2022_01,trip_2022_02,trip_2022_03,trip_2022_04)
+
+```
+
+## Step 3 : Process
+
+### Data Wrangling and Cleaning
+
+**CLEAN UP AND ADD DATA TO PREPARE FOR ANALYSIS**
+
+In this step, I would like to achieve clean data underlying complex dataset. To do so I considered the following processes:
+
+#### **Data Cleansing **
++ Handling missing data (dropped all NA (NULL) values), and removing duplicated entries, 
++ Finding incorrect and incomplete data using Excel and R language
+
+#### Now let's see what the data is look like
+
+```{r}
+View(bike_share_2021)
+View(bike_share_2022)
+
+```
+
+#### Viewing the internal structure of all columns and data types such as numeric, character, etc
+
+```{r}
+str(bike_share_2021)
+
+```
+
+```{r}
+str(bike_share_2022)
+
+```
+
+#### How many rows are in data frame?
+```{r}
+nrow(bike_share_2021) 
+
+```
+
+```{r}
+nrow(bike_share_2022)
+```
+
+#### Dimensions of the data frame
+```{r}
+dim(bike_share_2021)
+```
+
+```{r}
+dim(bike_share_2022)
+```
+
+####See the first 6 rows of data frame
+```{r}
+head(bike_share_2021) 
+```
+
+```{r}
+head(bike_share_2022)
+```
+
+#### Statistical summarize all data by summary function
+
+```{r}
+summary(bike_share_2021)
+
+```
+
+```{r}
+summary(bike_share_2022)
+```
+
+**Drop all Null(Cleaning Null)**
+
+There are 4771 NA's in bike_share_2021 and also have 746 NA's in bike_share_2022 after checking with summarize function. So, I drop NA using drop_na function and check again clean data frame.
+
+```{r}
+clean_bike_share_2021<-drop_na(bike_share_2021)
+View(clean_bike_share_2021)
+dim(clean_bike_share_2021)
+```
+
+```{r}
+clean_bike_share_2022<-drop_na(bike_share_2022)
+View(clean_bike_share_2022)
+dim(clean_bike_share_2022)
+```
+
+#### There are a few problems we will need to fix:
+
+1. The data can only be aggregated at the ride-level, which is too granular. We will want to add some additional columns of data -- such as day, month, year -- that provide additional opportunities to aggregate the data.
+2. We will want to add a calculated field for length of ride since the 2020Q1 data did not have the **tripduration** column even though we used 2021 and 2022. We will add "ride_length" to the entire dataframe for consistency.
+3. There are some rides where **tripduration** shows up as negative, including several hundred rides where Divvy took bikes out of circulation for Quality Control reasons. We will want to delete these rides.
+
+#### **Data Acquisition (Add Column)**
+
+Add columns that list the date, month, day, and year of each ride
+This will allow us to aggregate ride data for each month, day, or year ... before completing these operations we could only aggregate at the ride level
+
+```{r aggration for 2021}
+clean_bike_share_2021$date <- as.Date(clean_bike_share_2021$started_at) #The default format is yyyy-mm-dd
+clean_bike_share_2021$month <- format(as.Date(clean_bike_share_2021$date), "%m")
+clean_bike_share_2021$day <- format(as.Date(clean_bike_share_2021$date), "%d")
+clean_bike_share_2021$year <- format(as.Date(clean_bike_share_2021$date), "%Y")
+clean_bike_share_2021$day_of_week <- format(as.Date(clean_bike_share_2021$date), "%A")
+
+```
+
+```{r aggration for 2022}
+clean_bike_share_2022$date <- as.Date(clean_bike_share_2022$started_at)
+clean_bike_share_2022$month <- format(as.Date(clean_bike_share_2022$date), "%m")
+clean_bike_share_2022$day <- format(as.Date(clean_bike_share_2022$date), "%d")
+clean_bike_share_2022$year <- format(as.Date(clean_bike_share_2022$date), "%Y")
+clean_bike_share_2022$day_of_week <- format(as.Date(clean_bike_share_2022$date), "%A")
+
+```
+
+#### Add a "ride_length" calculation to all clean_bike_share data frame(in seconds)
+
+```{r}
+
+clean_bike_share_2021$ride_length <- difftime(clean_bike_share_2021$ended_at,clean_bike_share_2021$started_at)
+```
+
+```{r}
+clean_bike_share_2022$ride_length <- difftime(clean_bike_share_2022$ended_at,clean_bike_share_2022$started_at)
+```
+
+#### Inspect the structure of the columns
+```{r}
+str(clean_bike_share_2021)
+```
+
+```{r}
+str(clean_bike_share_2022)
+```
+
+#### Convert "ride_length" from factor to numeric so we can run calculations on the data
+
+```{r convert from factor to numeric of 2021}
+is.factor(clean_bike_share_2021$ride_length)
+clean_bike_share_2021$ride_length <- as.numeric(as.character(clean_bike_share_2021$ride_length))
+is.numeric(clean_bike_share_2021$ride_length)
+
+```
+
+```{r convert from factor to numeric of 2022}
+
+is.factor(clean_bike_share_2022$ride_length)
+clean_bike_share_2022$ride_length <- as.numeric(as.character(clean_bike_share_2022$ride_length))
+is.numeric(clean_bike_share_2022$ride_length)
+
+```
+
+#### Remove "missing" data
+
+The data frame includes a few hundred entries when bikes were taken out of docks and checked for quality by Divvy or ride_length was negative
+We will create a new update data frame since data is being removed
+
+```{r update data frame by removing missing data}
+update_clean_bike_share_2021 <- clean_bike_share_2021[!(clean_bike_share_2021$start_station_name == "HQ QR" | clean_bike_share_2021$ride_length<0),]
+
+```
+
+```{r}
+update_clean_bike_share_2022 <- clean_bike_share_2022[!(clean_bike_share_2022$start_station_name == "HQ QR" | clean_bike_share_2022$ride_length<0),]
+```
+
+## Step 4: Analyze
+
+### Identifying Trends and Relationships
+
+**CONDUCT DESCRIPTIVE ANALYSIS**
+
+Now, I performed some calculations such as mean, median, max and min values of ride_length for casual and member type users to identify the differences behavior between casual and member users
+
+#### Descriptive analysis on ride_length of 2021(all figures in seconds)
+1. straight average (total ride length / rides)
+2. midpoint number in the ascending array of ride lengths
+3. longest ride
+4. shortest ride
+
+```{r}
+
+mean(update_clean_bike_share_2021$ride_length) 
+median(update_clean_bike_share_2021$ride_length)
+max(update_clean_bike_share_2021$ride_length) 
+min(update_clean_bike_share_2021$ride_length) 
+```
+
+#### Descriptive analysis on ride_length of 2022(all figures in seconds)
+
+```{r}
+mean(update_clean_bike_share_2022$ride_length) 
+median(update_clean_bike_share_2022$ride_length)
+max(update_clean_bike_share_2022$ride_length) 
+min(update_clean_bike_share_2022$ride_length)
+```
+#### I can condense the four lines above to one line using summary() on the specific attribute
+
+```{r}
+summary(update_clean_bike_share_2021$ride_length)
+```
+
+```{r}
+summary(update_clean_bike_share_2022$ride_length)
+```
+
+#### Compare members and casual users
+
+```{r}
+aggregate(update_clean_bike_share_2021$ride_length ~ update_clean_bike_share_2021$member_casual, FUN = mean)
+aggregate(update_clean_bike_share_2021$ride_length ~ update_clean_bike_share_2021$member_casual, FUN = median)
+aggregate(update_clean_bike_share_2021$ride_length ~ update_clean_bike_share_2021$member_casual, FUN = max)
+aggregate(update_clean_bike_share_2021$ride_length ~ update_clean_bike_share_2021$member_casual, FUN = min)
+```
+```{r}
+aggregate(update_clean_bike_share_2022$ride_length ~ update_clean_bike_share_2022$member_casual, FUN = mean)
+aggregate(update_clean_bike_share_2022$ride_length ~ update_clean_bike_share_2022$member_casual, FUN = median)
+aggregate(update_clean_bike_share_2022$ride_length ~ update_clean_bike_share_2022$member_casual, FUN = max)
+aggregate(update_clean_bike_share_2022$ride_length ~ update_clean_bike_share_2022$member_casual, FUN = min)
+```
+
+#### See the average ride time by each day for members vs casual users
+
+```{r}
+aggregate(update_clean_bike_share_2021$ride_length ~ update_clean_bike_share_2021$member_casual + update_clean_bike_share_2021$day_of_week, FUN = mean)
+```
+
+```{r}
+aggregate(update_clean_bike_share_2022$ride_length ~ update_clean_bike_share_2022$member_casual + update_clean_bike_share_2022$day_of_week, FUN = mean)
+```
+
+#### Notice that the days of the week are out of order. Let's fix that.
+
+```{r}
+update_clean_bike_share_2021$day_of_week <- ordered(update_clean_bike_share_2021$day_of_week, levels=c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+```
+
+```{r}
+update_clean_bike_share_2022$day_of_week <- ordered(update_clean_bike_share_2022$day_of_week, levels=c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+```
+
+#### Now, let's run the average ride time by each day for members vs casual users
+
+```{r}
+aggregate(update_clean_bike_share_2021$ride_length ~ update_clean_bike_share_2021$member_casual + update_clean_bike_share_2021$day_of_week, FUN = mean)
+
+```
+
+```{r}
+aggregate(update_clean_bike_share_2022$ride_length ~ update_clean_bike_share_2022$member_casual + update_clean_bike_share_2022$day_of_week, FUN = mean)
+```
+
+#### analyze ridership data by type and weekday
+
+1. creates weekday field using wday()
+2. groups by user type and weekday
+3. calculates the number of rides and average duration 
+4. calculates the average duration
+5. sorts
+
+```{r analyze ridership data by type and weekday of 2021}
+  update_clean_bike_share_2021 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>%  
+  group_by(member_casual, weekday) %>%  
+  summarise(number_of_rides = n()	
+            ,average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, weekday)
+ 
+```
+
+```{r analyze ridership data by type and weekday of 2022}
+  update_clean_bike_share_2022 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>%
+  group_by(member_casual, weekday) %>%  
+  summarise(number_of_rides = n()							
+          ,average_duration = mean(ride_length)) %>% 		
+  arrange(member_casual, weekday)	
+```
+
+#### Let's visualize the number of rides by rider type
+
+```{r visualize the number of rides by rider type of 2021}
+  update_clean_bike_share_2021 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>% 
+  group_by(member_casual, weekday, month) %>% 
+  summarise(number_of_rides = n()
+            ,average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, weekday)  %>% 
+  ggplot(aes(x = weekday, y = number_of_rides, fill = member_casual)) +
+  geom_col(position = "dodge")+
+  facet_wrap(~month) +
+  labs(title="Analyze the number of rides by rider type of 2021")
+
+``` 
+
+```{r visualize the number of rides by rider type of 2022}
+  update_clean_bike_share_2022 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>% 
+  group_by(member_casual, weekday, month) %>% 
+  summarise(number_of_rides = n()
+            ,average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, weekday)  %>% 
+  ggplot(aes(x = weekday, y = number_of_rides, fill = member_casual)) +
+  geom_col(position = "dodge")+ 
+  facet_wrap(~month) +
+  labs(title="Analyze the number of rides by rider type of 2022")
+```
+
+#### Let's create a visualization for average duration
+
+```{r visualization for average duration of 2021}
+  update_clean_bike_share_2021 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>% 
+  group_by(member_casual, weekday,month) %>% 
+  summarise(number_of_rides = n()
+            ,average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, weekday)  %>% 
+  ggplot(aes(x = weekday, y = average_duration, fill = member_casual)) +
+  geom_col(position = "dodge2")+
+  facet_wrap(~month) +
+  labs(title="Visualization for average durationof by 2021")
+```
+
+```{r visualization for average duration of 2022}
+  update_clean_bike_share_2021 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>% 
+  group_by(member_casual, weekday,month) %>% 
+  summarise(number_of_rides = n()
+            ,average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, weekday)  %>% 
+  ggplot(aes(x = weekday, y = average_duration, fill = member_casual)) +
+  geom_col(position = "dodge2")+
+  facet_wrap(~month) +
+  labs(title="Visualization for average durationof by 2022")
+```
+
+## Step 5: Share
+
+### Conclusion of Analysis
+
+By taking into account the insights I have learned from the information available, I can now conclude and make recommendations for my business task: How do annual members and casual riders use Cyclistic bikes differently?
+I perform analysis what is the different the whole year of 2021. The result show that the number of both type riders are the lowest rate in February,2021. From my analysis, **Annual Member** user is higher than **Casual** user in the last two month of 2021 and 2022.
+
+#### Recomdatation
+
+For casual users, both the ride and the duration are Saturday and Sunday. I suggest to create a Holiday Tourism package or promotion package on weekend. As I learned, the annual member price is very low cost than the casual user shown in company website. So, for casual users, it is advisable to set a more reasonable price or change the duration time.
+
+#### Further Analysis
+
+For further analysis, What kind of bike do casual users like? I think I need to know the locations or the most popular routes,ages, and gender. It will help the company gain insights into delivering the best promotions in these targeted channels to turn more casual users into member users.
+
+**Thanks for reaching up here and I hope you enjoy with safely life forever**
+
+
+
+
+
+
+
+
+
+
+  
